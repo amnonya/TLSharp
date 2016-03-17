@@ -19,7 +19,9 @@ namespace TLSharp.Tests
 
 		private string UserNameToSendMessage { get; set; }
 
-		[TestInitialize]
+        private string Query { get; set; }
+
+        [TestInitialize]
 		public void Init()
 		{
 			// Setup your phone numbers in app.config
@@ -35,7 +37,11 @@ namespace TLSharp.Tests
 			if (string.IsNullOrEmpty(UserNameToSendMessage))
 				throw new InvalidOperationException("UserNameToSendMessage is null. Specify userName in app.config");
 
-		}
+            Query = ConfigurationManager.AppSettings["query"];
+            if (string.IsNullOrEmpty(Query))
+                throw new InvalidOperationException("Query is null. Specify query in app.config");
+
+        }
 
 		[TestMethod]
 		public async Task AuthUser()
@@ -46,7 +52,7 @@ namespace TLSharp.Tests
 			await client.Connect();
 
 			var hash = await client.SendCodeRequest(NumberToAuthenticate);
-			var code = "93463"; // you can change code in debugger
+			var code = "57905"; // you can change code in debugger
 
 			var user = await client.MakeAuth(NumberToAuthenticate, hash, code);
 
@@ -149,7 +155,28 @@ namespace TLSharp.Tests
 			Assert.IsNotNull(hist);
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public async Task SearchMessage()
+        {
+            var store = new FileSessionStore();
+            var client = new TelegramClient(store, "session");
+            await client.Connect();
+
+            Assert.IsTrue(client.IsUserAuthorized());
+
+            var res = await client.ImportContactByPhoneNumber(NumberToSendMessage);
+
+            Assert.IsNotNull(res);
+
+            //int d = (int)new TimeSpan().TotalMilliseconds;
+
+            var hist = await client.SearchMessagesForContact(res.Value, Query,
+                new InputMessagesFilterPhotosConstructor(), -1, -1, 0, 5);
+
+            Assert.IsNotNull(hist);
+        }
+
+        [TestMethod]
 		public async Task UploadAndSendMedia()
 		{
 			var store = new FileSessionStore();

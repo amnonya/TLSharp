@@ -18,8 +18,8 @@ namespace TLSharp.Core
 		private MtProtoSender _sender;
 		private AuthKey _key;
 		private TcpTransport _transport;
-		private string _apiHash = "a2514f96431a228e4b9ee473f6c51945";
-		private int _apiId = 19474;
+		private string _apiHash = "595bbf7598863b03161a5c6e2f7db220";
+		private int _apiId = 47887;
 		private Session _session;
 		private List<DcOption> dcOptions; 
 
@@ -201,7 +201,7 @@ namespace TLSharp.Core
 			if (!validateNumber(phoneNumber))
 				throw new InvalidOperationException("Invalid phone number. It should be only digit string, from 5 to 20 digits.");
 
-			var request = new ImportContactRequest(new InputPhoneContactConstructor(0, phoneNumber, "My Test Name", String.Empty));
+			var request = new ImportContactRequest(new InputPhoneContactConstructor(0, phoneNumber, String.Empty, String.Empty));
 			await _sender.Send(request);
 			await _sender.Recieve(request);
 
@@ -239,7 +239,17 @@ namespace TLSharp.Core
 			return request.messages;
 		}
 
-		private bool validateNumber(string number)
+        public async Task<List<Message>> SearchMessagesForContact(int user_id, string q, MessagesFilter filter, int min_date, int max_date,
+                                                            int offset, int limit, int max_id = -1)
+        {
+            var request = new MessagesSearchRequest(new InputPeerContactConstructor(user_id), q, filter, min_date, max_date, offset, max_id, limit);
+            await _sender.Send(request);
+            await _sender.Recieve(request);
+
+            return request.messages;
+        }
+
+        private bool validateNumber(string number)
 		{
 			var regex = new Regex("^\\d{7,20}$");
 
