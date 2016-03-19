@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TLSharp.Core;
 using TLSharp.Core.Auth;
@@ -52,7 +53,7 @@ namespace TLSharp.Tests
 			await client.Connect();
 
 			var hash = await client.SendCodeRequest(NumberToAuthenticate);
-			var code = "57905"; // you can change code in debugger
+			var code = "90579"; // you can change code in debugger
 
 			var user = await client.MakeAuth(NumberToAuthenticate, hash, code);
 
@@ -154,6 +155,61 @@ namespace TLSharp.Tests
 
 			Assert.IsNotNull(hist);
 		}
+
+        [TestMethod]
+        public async Task GetMessages()
+        {
+            var store = new FileSessionStore();
+            var client = new TelegramClient(store, "session");
+            await client.Connect();
+
+            Assert.IsTrue(client.IsUserAuthorized());
+
+            var hist = await client.GetMessages(Enumerable.Range(151,75).ToList());
+
+            Assert.IsNotNull(hist);
+        }
+
+        [TestMethod]
+        public async Task GetContacts()
+        {
+            var store = new FileSessionStore();
+            var client = new TelegramClient(store, "session");
+            await client.Connect();
+
+            Assert.IsTrue(client.IsUserAuthorized());
+
+            var res = await client.ImportContactByPhoneNumber(NumberToSendMessage);
+
+            Assert.IsNotNull(res);
+
+            var cnts = await client.GetContacts();
+
+            Assert.IsNotNull(cnts);
+        }
+
+        [TestMethod]
+        public async Task GetUsers()
+        {
+            var store = new FileSessionStore();
+            var client = new TelegramClient(store, "session");
+            await client.Connect();
+
+            Assert.IsTrue(client.IsUserAuthorized());
+
+            var ids = (await client.GetContacts()).Cast<ContactConstructor>();
+
+            var ius = ids.Select(r => TL.inputUserContact(r.user_id)).ToList();
+
+            var res = new User[ius.Count];
+            for (int i = 0; i < res.Length; i++)
+            {
+                var r = await client.GetFullUser(ius[i]);
+                res[i] = r;
+            }      
+
+            Assert.IsNotNull(res);
+        }
 
         [TestMethod]
         public async Task SearchMessage()
