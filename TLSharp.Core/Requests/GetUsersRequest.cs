@@ -22,18 +22,20 @@ namespace TLSharp.Core.Requests
             writer.Write(0x1cb5c415); // vector#1cb5c415
             writer.Write(_id.Count); // vector length
             foreach (var id in _id)
+            {
                 id.Write(writer);
+            }
         }
 
         public override void OnResponse(BinaryReader reader)
         {
             var code = reader.ReadUInt32(); // vector#1cb5c415
-            int users_len = reader.ReadInt32(); // vector length
-            if (users_len != 0)
+            int users_len = reader.ReadInt32();
+            users = new List<User>(users_len);
+            for (var i = 0; i < users_len; i++)
             {
-                users = new List<User>(users_len);
-                for (int i = 0; i < users_len; i++)
-                    users.Add(TL.Parse<User>(reader));
+                var usrEl = TL.Parse<User>(reader);
+                users.Add(usrEl);
             }
         }
 
