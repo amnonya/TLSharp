@@ -101,8 +101,6 @@ namespace TLSharp.Core
 				request = new AuthSendCodeRequest(phoneNumber, 5, _apiId, _apiHash, "en");
 				try
 				{
-					
-
 					await _sender.Send(request);
 					await _sender.Recieve(request);
 
@@ -239,14 +237,49 @@ namespace TLSharp.Core
 			return request.messages;
 		}
 
+        public async Task<List<Message>> GetMessages(List<int> id)
+        {
+            var request = new GetMessagesRequest(id);
+            await _sender.Send(request);
+            await _sender.Recieve(request);
+
+            return request.messages;
+        }
+
         public async Task<List<Message>> SearchMessagesForContact(int user_id, string q, MessagesFilter filter, int min_date, int max_date,
                                                             int offset, int limit, int max_id = -1)
         {
             var request = new MessagesSearchRequest(new InputPeerContactConstructor(user_id), q, filter, min_date, max_date, offset, max_id, limit);
             await _sender.Send(request);
             await _sender.Recieve(request);
-
             return request.messages;
+        }
+
+        public async Task<List<User>> GetUsers(List<InputUser> id)
+        {
+            var request = new GetUsersRequest(id);
+            await _sender.Send(request);
+            await _sender.Recieve(request);
+
+            return request.users;
+        }
+
+        public async Task<User> GetFullUser(InputUser id)
+        {
+            var request = new GetFullUserRequest(id);
+            await _sender.Send(request);
+            await _sender.Recieve(request);
+
+            return request.user;
+        }
+
+        public async Task<List<Contact>> GetContacts(string hash = "d41d8cd98f00b204e9800998ecf8427e")
+        {
+            var request = new GetContactsRequest(hash);
+            await _sender.Send(request);
+            await _sender.Recieve(request);
+
+            return request.contacts;
         }
 
         private bool validateNumber(string number)
